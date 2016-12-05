@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
+ * Запускаем при старте устройство наше приложение
  * Created by MishustinAI on 05.12.2016.
  */
 
