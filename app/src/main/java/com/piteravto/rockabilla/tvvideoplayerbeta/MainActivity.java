@@ -1,10 +1,19 @@
 package com.piteravto.rockabilla.tvvideoplayerbeta;
 
+import android.graphics.PixelFormat;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.SurfaceView;
+import android.widget.MediaController;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.piteravto.rockabilla.tvvideoplayerbeta.api.ServerApi;
+
+import java.io.File;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -19,9 +28,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // установите свой путь к файлу на SD-карточке
+        String videoSource ="/sdcard/Movies/cat.3gp";
 
+        VideoView videoView = (VideoView) findViewById(R.id.video);
+
+        videoView.setVideoPath(videoSource);
+
+        videoView.setMediaController(new MediaController(this));
+        videoView.requestFocus(0);
+        videoView.start(); // начинаем воспроизведение автоматически
     }
-    ///
+
+
+
+
+
     //получаем инструкцию что нам делать
     private void getCommand ()
     {
