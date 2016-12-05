@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    //
+    ///
     //получаем инструкцию что нам делать
     private void getCommand ()
     {
