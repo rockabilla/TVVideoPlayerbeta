@@ -1,11 +1,12 @@
 package com.piteravto.rockabilla.tvvideoplayerbeta;
 
 
-import android.os.Environment;
+import android.content.pm.ActivityInfo;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.widget.MediaController;
+
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -25,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         // установите свой путь к файлу на SD-карточке
         String videoSource = "/storage/6605-E526/test.mp4";
         //Toast.makeText(MainActivity.this, videoSource, Toast.LENGTH_SHORT).show();
