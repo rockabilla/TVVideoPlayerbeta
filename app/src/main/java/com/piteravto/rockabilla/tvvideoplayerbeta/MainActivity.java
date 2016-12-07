@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         // установите свой путь к файлу на SD-карточке
         String videoSource = "/storage/6605-E526/test.mp4";
         //Toast.makeText(MainActivity.this, videoSource, Toast.LENGTH_SHORT).show();
-        videoView = (VideoView) findViewById(R.id.video);
+        videoView = (VideoView) findViewById(R.id.videoview);
 
         videoView.setVideoPath(videoSource);
 
