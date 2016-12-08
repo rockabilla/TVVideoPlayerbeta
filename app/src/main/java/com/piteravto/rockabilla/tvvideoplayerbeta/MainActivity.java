@@ -1,9 +1,13 @@
 package com.piteravto.rockabilla.tvvideoplayerbeta;
 
 
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +18,8 @@ import android.widget.VideoView;
 import com.piteravto.rockabilla.tvvideoplayerbeta.api.ServerApi;
 
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,139 +44,44 @@ public class MainActivity extends AppCompatActivity {
         //горизонтальная ориентация
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        /*
+    }
+
+    private void playVideo (String Path)
+    {
         // установите свой путь к файлу на SD-карточке
         //String videoSource = "/storage/6605-E526/test.mp4";
         // тут у нас путь, почти не захардкожен (не всегда правильно определяется путь)
-        String videoSource = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/test.mp4";
+        //String videoSource = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/test.mp4";
         //Toast.makeText(MainActivity.this, videoSource, Toast.LENGTH_SHORT).show();
 
 
         videoView = (VideoView) findViewById(R.id.videoview);
-        videoView.setVideoPath(videoSource);
+        videoView.setVideoPath(Path);
         //убрали play и прочее
         videoView.setMediaController(null);
         videoView.requestFocus();
         videoView.start(); // начинаем воспроизведение автоматически
-        */
-        //Toast.makeText(MainActivity.this, getString(R.string.server_name) + "tv-service/uploads/d9e28907f1a7d949c7d973cdcc2e363c.mp4", Toast.LENGTH_LONG).show();
-
-        downloadVideo("tv-service/uploads/d9e28907f1a7d949c7d973cdcc2e363c.mp4");
-        //getCommand();
-
-        //http://tabus.piteravto.ru/
     }
 
-    private void downloadVideo1 ()
+    private void downloadVideo(String url, String fileName, String description, String title)
     {
-        ServerApi.getApi().downloadVideo().enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
-                if (response.isSuccessful()) {
-                    //Log.d(TAG, "server contacted and has file");
-                    Toast.makeText(MainActivity.this, "server contacted and has file", Toast.LENGTH_SHORT).show();
-                    boolean writtenToDisk = writeVideoToDisk(response.body());
-
-                    //Log.d(TAG, "file download was a success? " + writtenToDisk);
-                } else {
-                    //Log.d(TAG, "server contact failed");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                //Log.e(TAG, "error");
-            }
-        });
-    }
-
-    private void downloadVideo (final String url)
-    {
-        new AsyncTask<Void, Long, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                ServerApi.getApi().downloadVideo().enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        Toast.makeText(MainActivity.this, "begin", Toast.LENGTH_SHORT).show();
-                        if (response.isSuccessful()) {
-
-                            //Log.d(TAG, "server contacted and has file");
-                            Toast.makeText(MainActivity.this, "server contacted and has file", Toast.LENGTH_SHORT).show();
-                            boolean writtenToDisk = writeVideoToDisk(response.body());
-
-                            //Log.d(TAG, "file download was a success? " + writtenToDisk);
-                            Toast.makeText(MainActivity.this, "file download was a success? ", Toast.LENGTH_SHORT).show();
-                        }
-                        else {
-                            //Log.d(TAG, "server contact failed");
-                            Toast.makeText(MainActivity.this, "server contact failed", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        //Log.e(TAG, "error");
-                        Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                return null;
-            }
-        }.execute();
-    }
-
-    private boolean writeVideoToDisk(ResponseBody body) {
-        try {
-            // todo change the file location/name according to your needs
-            File futureStudioIconFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/" + "video.mp4");
-
-            Toast.makeText(MainActivity.this, Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/" + "video.mp4", Toast.LENGTH_LONG).show();
-
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
-
-            try {
-                byte[] fileReader = new byte[4096];
-
-                long fileSize = body.contentLength();
-                long fileSizeDownloaded = 0;
-
-                inputStream = body.byteStream();
-                outputStream = new FileOutputStream(futureStudioIconFile);
-
-                while (true) {
-                    int read = inputStream.read(fileReader);
-
-                    if (read == -1) {
-                        break;
-                    }
-
-                    outputStream.write(fileReader, 0, read);
-
-                    fileSizeDownloaded += read;
-
-                    //Log.d(TAG, "file download: " + fileSizeDownloaded + " of " + fileSize);
-                    Toast.makeText(MainActivity.this, "file download: " + fileSizeDownloaded + " of " + fileSize, Toast.LENGTH_SHORT).show();
-                }
-
-                outputStream.flush();
-
-                return true;
-            } catch (IOException e) {
-                return false;
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            }
-        } catch (IOException e) {
-            return false;
+        //String url = getString(R.string.server_name) + "tv-service/uploads/d9e28907f1a7d949c7d973cdcc2e363c.mp4";
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDescription(description);
+        request.setTitle(title);
+// in order for this if to run, you must use the android 3.2 to compile your app
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         }
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+
+// get download service and enqueue file
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(request);
     }
+
+
 
 
     //получаем инструкцию что нам делать
