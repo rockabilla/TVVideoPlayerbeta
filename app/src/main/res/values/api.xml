@@ -4,6 +4,6 @@
     <string name="server_name">http://tabus.piteravto.ru/</string>
     <string name="tv_directory">tv-service</string>
     <string name="get_command">np.php</string>
-    <string name="send_notification">tablog?tvid=System.getString(getContentResolver(),%20System.ANDROID_ID)</string>
+    <string name="send_notification">np.php</string>
 
 </resources>
