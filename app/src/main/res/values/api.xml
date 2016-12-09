@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="server_name">http://tabus.piteravto.ru/</string>
+    <string name="server_name">http://spkh-webax01.piteravto.ru/</string>
     <string name="tv_directory">tv-service</string>
     <string name="get_command">np.php</string>
     <string name="send_notification">np.php</string>
