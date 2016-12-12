@@ -14,11 +14,9 @@ import android.net.Uri;
 
 import android.os.Build;
 import android.os.Environment;
-import android.provider.CalendarContract;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.widget.VideoView;
 import com.piteravto.rockabilla.tvvideoplayerbeta.api.ServerApi;
 import com.piteravto.rockabilla.tvvideoplayerbeta.controllers.WifiController;
@@ -28,7 +26,6 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -44,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private String videoToPlay;
     private ArrayList<String> filesNames;
     private ArrayList<String> downloadFilesName;
-    //private String device_id;
+    private String device_id;
 
 
     @Override
@@ -55,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        //device_id = "?tvid=" + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        device_id = "?tvid=" + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         try {
             videoView = (VideoView) findViewById(R.id.videoview);
@@ -183,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         String formattedDate = df.format(c.getTime());
         final String errorToSend = formattedDate +"\n" + error;
         RequestBody body = RequestBody.create(MediaType.parse("text/plain"), errorToSend);
-        ServerApi.getApi().sendError(getString(R.string.tv_directory), getString(R.string.send_error)/* + device_id*/, body).enqueue(new Callback<ResponseBody>() {
+        ServerApi.getApi().sendError(getString(R.string.tv_directory), getString(R.string.send_error) + device_id, body).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
@@ -200,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
     //получаем инструкцию что нам делать
     private void getCommand()
     {
-        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command)/* + device_id*/).enqueue(new Callback<ResponseBody>() {
+        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command) + device_id).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
