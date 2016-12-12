@@ -4,5 +4,6 @@
     <string name="server_name">http://10.0.20.56/</string>
     <string name="tv_directory">tv-service</string>
     <string name="get_command">np2.php</string>
+    <string name="send_error">error.php</string>
 
 </resources>

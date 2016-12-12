@@ -23,7 +23,15 @@ import android.widget.VideoView;
 import com.piteravto.rockabilla.tvvideoplayerbeta.api.ServerApi;
 import com.piteravto.rockabilla.tvvideoplayerbeta.controllers.WifiController;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private String videoToPlay;
     private ArrayList<String> filesNames;
     private ArrayList<String> downloadFilesName;
-    private String device_id;
+    //private String device_id;
 
 
     @Override
@@ -47,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        device_id = "?tvid=" + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        //device_id = "?tvid=" + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         try {
             videoView = (VideoView) findViewById(R.id.videoview);
@@ -65,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
             getCommand();
 
         } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            sendError("Error in OnCreate\n" + sw.toString());
             getCommand();
         }
 
@@ -89,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 filesNames.add(files[i].getName());
             }
         } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            sendError("Error in getFilesNames\n" + sw.toString());
             getFilesNames();
         }
     }
@@ -114,9 +130,14 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
+                sendError("Error in playVideo, Path==null or Path.length()==0, not fatal error");
                 getCommand();
             }
         } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            sendError("Error in playVideo\n" + sw.toString());
             getCommand();
         }
     }
@@ -155,11 +176,31 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    private void sendError(String error)
+    {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String formattedDate = df.format(c.getTime());
+        final String errorToSend = formattedDate +"\n" + error;
+        RequestBody body = RequestBody.create(MediaType.parse("text/plain"), errorToSend);
+        ServerApi.getApi().sendError(getString(R.string.tv_directory), getString(R.string.send_error)/* + device_id*/, body).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                sendError("sendError onFailure, its not first try\n"+errorToSend);
+            }
+        });
+    }
+
 
     //получаем инструкцию что нам делать
     private void getCommand()
     {
-        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command) + device_id).enqueue(new Callback<ResponseBody>() {
+        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command)/* + device_id*/).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
@@ -181,11 +222,16 @@ public class MainActivity extends AppCompatActivity {
                     playVideo(videoToPlay, videoView);
 
                 } catch (Exception e) {
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    sendError("Error in getCommand() onResponse (it can be downloadVideo error)\n" + sw.toString());
                     playVideo(videoToPlay, videoView);
                 }
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                sendError("onFailure in getCommand()");
                 getCommand();
             }
         });
