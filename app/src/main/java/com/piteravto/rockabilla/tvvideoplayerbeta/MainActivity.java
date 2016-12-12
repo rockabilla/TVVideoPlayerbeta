@@ -14,20 +14,13 @@ import android.net.Uri;
 
 import android.os.Build;
 import android.os.Environment;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
-
-import android.widget.Toast;
 import android.widget.VideoView;
-
 import com.piteravto.rockabilla.tvvideoplayerbeta.api.ServerApi;
 import com.piteravto.rockabilla.tvvideoplayerbeta.controllers.WifiController;
-
 import java.io.File;
 import java.util.ArrayList;
-
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //горизонтальная ориентация
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         try {
             videoView = (VideoView) findViewById(R.id.videoview);
@@ -61,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             getFilesNames();
-
             WifiController.configApState(MainActivity.this);
-
             getCommand();
 
         } catch (Exception e) {
@@ -81,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
     {
         try {
             String path = Environment.getExternalStorageDirectory().toString()+"/Download";
-            filesNames = new ArrayList<String>();
-            downloadFilesName = new ArrayList<String>();
+            filesNames = new ArrayList<>();
+            downloadFilesName = new ArrayList<>();
             File directory = new File(path);
             File[] files = directory.listFiles();
 
@@ -91,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 filesNames.add(files[i].getName());
             }
         } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "getFilesNames Error", Toast.LENGTH_LONG).show();
+            getFilesNames();
         }
     }
 
@@ -99,24 +89,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void playVideo (String Path, VideoView videoView)
     {
-        // установите свой путь к файлу на SD-карточке
-        //String videoSource = "/storage/6605-E526/test.mp4";
-        // тут у нас путь, почти не захардкожен (не всегда правильно определяется путь)
-        //String videoSource = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/test.mp4";
-        //Toast.makeText(MainActivity.this, videoSource, Toast.LENGTH_SHORT).show();
-
         try {
             //если у нас чего то нет, значит ничего на плей не рпиходило и сейчас загружается, тупо ждем
-            if (Path == null || Path.length()>0) {
+            if (Path != null && Path.length()!=0) {
                 String[] tmp = Path.split("/");
 
                 String fileName = tmp[tmp.length - 1];
-                Toast.makeText(MainActivity.this, "file name to play " + fileName, Toast.LENGTH_LONG).show();
 
                 //если к нам пришло что то, чего у нас нет, тогда мы это не играем)
                 if (filesNames.contains(fileName)) {
                     videoView.setVideoPath(Path);
-                    Toast.makeText(MainActivity.this, "start to play " + fileName, Toast.LENGTH_LONG).show();
                     videoView.start(); // начинаем воспроизведение автоматически
                 } else {
                     getCommand();
@@ -127,8 +109,6 @@ public class MainActivity extends AppCompatActivity {
                 getCommand();
             }
         } catch (Exception e) {
-
-            Toast.makeText(MainActivity.this, "playVideo Error", Toast.LENGTH_LONG).show();
             getCommand();
         }
     }
@@ -138,7 +118,9 @@ public class MainActivity extends AppCompatActivity {
 
         //если к нам на загрузку пришло что то, что у нас уже есть, тогда мы это не качаем
         if(filesNames.contains(fileName) || downloadFilesName.contains(fileName))
-                return;
+        {
+            return;
+        }
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setDescription(description);
         request.setTitle(title);
@@ -159,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
         downloadFilesName.add(fileName);
     }
 
@@ -168,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
     //получаем инструкцию что нам делать
     private void getCommand()
     {
-        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command) + "?tvid=" + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID)).enqueue(new Callback<ResponseBody>() {
+        ServerApi.getApi().getData(getString(R.string.tv_directory), getString(R.string.get_command)).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
@@ -190,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
                     playVideo(videoToPlay, videoView);
 
                 } catch (Exception e) {
-
                     playVideo(videoToPlay, videoView);
                 }
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                getCommand();
             }
         });
     }
